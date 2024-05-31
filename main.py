@@ -16,13 +16,8 @@ tema_layout = "dark"
 set_appearance_mode(tema_layout)
 
 
-# Defina dropdown_comandos como uma variável global
-dropdown_comandos = None
-
 ### FUNÇÕES ###
-def adicionar_comando():
-    global dropdown_comandos  # Acesse a variável global
-
+def adicionar_comando(): # Acesse a variável global
     nome = nome_comando_input.get()
     descricao = descricao_comando_input.get("1.0", END)
     codigo = comando_input.get("1.0", END)
@@ -44,17 +39,6 @@ def adicionar_comando():
     # Recarregue os comandos disponíveis
     comandos_lista = ver_comandos()
     comandos = [str(item[1]) for item in comandos_lista]
-
-    # Remova o dropdown atual se existir
-    if dropdown_comandos:
-        dropdown_comandos.destroy()
-
-    # Crie um novo dropdown com os comandos atualizados
-    dropdown_comandos = CTkComboBox(master=tab_view.tab("Executar"), width=300, command=comando_escolhido, values=comandos)
-    dropdown_comandos.set("Escolha um comando")
-    dropdown_comandos.pack(pady=5)
-
-
 
 
 # Frame do header
@@ -132,8 +116,21 @@ carregar_comandos()
 frame_botoes = CTkFrame(master=app, fg_color="transparent")
 frame_botoes.grid(row=2, column=0, pady=10)
 
+# Executar o comando selecionado
+def executar_comando():
+    codigo_comando = comando_input.get("1.0", END)
+    try:
+        exec(codigo_comando)
+        print("Comando executado com sucesso")
+    except Exception as e:
+        print(f"Ocorreu um erro ao executar o comando: {e}")
+
+# Botão para executar o comando
+button_executar = CTkButton(frame_botoes, text="Executar", command=executar_comando)
+button_executar.pack(side="left", padx=10)
+
 def editar_comando():
-    tab_view.set("Cadastrar")
+    print("Editar comando")
 
 button_editar = CTkButton(master=frame_botoes, text="Editar", command=editar_comando)
 button_editar.pack(side="left", padx=10)
@@ -145,11 +142,8 @@ button_excluir = CTkButton(master=frame_botoes, text="Excluir", command=excluir_
 button_excluir.pack(side="left", padx=10)
 
 # Tabs
-tab_view = CTkTabview(app, width=400)
-tab_view.grid(row=1, column=1, sticky="nsew", rowspan=2, padx=10, pady=10)
-tab_view.add("Executar")
-tab_view.add("Cadastrar")
-
+frame_cadastro = CTkFrame(app)
+frame_cadastro.grid(row=1, column=1, padx=10, pady=10, rowspan=2)
 
 ### EXECUTAR ###
 
@@ -160,54 +154,32 @@ comandos = [str(item[1]) for item in comandos_lista]
 descricao_lista = ver_comandos()
 descricao = [str(item[2]) for item in descricao_lista]
 
-def comando_escolhido(comando):
-    descricao_comando.configure(text=f"Descrição: {descricao[1]}", wraplength=350)
-
-dropdown_comandos = CTkComboBox(master=tab_view.tab("Executar"), width=300, command=comando_escolhido, values=comandos)
-dropdown_comandos.set("Escolha um comando")
-dropdown_comandos.pack(pady=5)
-
-
-# Executar o comando selecionado
-def executar_comando():
-    codigo_comando = comando_input.get("1.0", END)
-    try:
-        exec(codigo_comando)
-        print("Comando executado com sucesso")
-    except Exception as e:
-        print(f"Ocorreu um erro ao executar o comando: {e}")
-
-# Botão para executar o comando
-button_executar = CTkButton(master=tab_view.tab("Executar"), text="Executar", command=executar_comando)
-button_executar.pack(side="bottom", pady=20)
-descricao_comando = CTkLabel(master=tab_view.tab("Executar"), text="")
-descricao_comando.pack(side="bottom")
 
 ### CADASTRAR ###
 
 # Input do nome do comando
-label_comando = CTkLabel(master=tab_view.tab("Cadastrar"), text="Comando:")
+label_comando = CTkLabel(frame_cadastro, text="Comando:")
 label_comando.pack()
-nome_comando_input = CTkEntry(master=tab_view.tab("Cadastrar"), width=300)
-nome_comando_input.pack(pady=5)
+nome_comando_input = CTkEntry(frame_cadastro, width=300)
+nome_comando_input.pack(pady=5, padx=10)
 
 # Input da descrição do comando
-label_descricao = CTkLabel(master=tab_view.tab("Cadastrar"), text="Descrição:")
+label_descricao = CTkLabel(frame_cadastro, text="Descrição:")
 label_descricao.pack()
-descricao_comando_input = CTkTextbox(master=tab_view.tab("Cadastrar"), width=300, height=65, border_width=2, scrollbar_button_color="black")
-descricao_comando_input.pack(pady=5)
+descricao_comando_input = CTkTextbox(frame_cadastro, width=300, height=65, border_width=2, scrollbar_button_color="black")
+descricao_comando_input.pack(pady=5, padx=10)
 
 # Input do código do comando
-label_comando = CTkLabel(master=tab_view.tab("Cadastrar"), text="Código:")
+label_comando = CTkLabel(frame_cadastro, text="Código:")
 label_comando.pack()
-comando_input = CTkTextbox(master=tab_view.tab("Cadastrar"), width=300, height=90, border_width=2)
-comando_input.pack(pady=5)
+comando_input = CTkTextbox(frame_cadastro, width=300, height=160, border_width=2)
+comando_input.pack(pady=5, padx=10)
 
 # Botão para cadastrar o comando
 def cadastrar_comando():
     print("Cadastrar comando")
 
-button_cadastrar = CTkButton(master=tab_view.tab("Cadastrar"), text="Cadastrar", command=adicionar_comando)
-button_cadastrar.pack(pady=20)
+button_cadastrar = CTkButton(frame_cadastro, text="Cadastrar", command=adicionar_comando)
+button_cadastrar.pack(pady=10)
 
 app.mainloop()
