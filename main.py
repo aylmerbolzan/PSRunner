@@ -1,5 +1,8 @@
 from customtkinter import *
 from tkinter import ttk
+from tkinter import messagebox
+
+from view import inserir_comando, ver_comandos
 
 app = CTk()
 app.title("pyRunner")
@@ -11,6 +14,48 @@ app.grid_columnconfigure(1, weight=2)
 
 tema_layout = "dark"
 set_appearance_mode(tema_layout)
+
+
+# Defina dropdown_comandos como uma variável global
+dropdown_comandos = None
+
+### FUNÇÕES ###
+def adicionar_comando():
+    global dropdown_comandos  # Acesse a variável global
+
+    nome = nome_comando_input.get()
+    descricao = descricao_comando_input.get("1.0", END)
+    codigo = comando_input.get("1.0", END)
+
+    lista_comandos = [nome, descricao, codigo]
+
+    for i in lista_comandos:
+        if i == "":
+            messagebox.showerror("Erro", "Preencha todos os campos")
+            return
+        
+    inserir_comando(lista_comandos)
+    messagebox.showinfo("Sucesso", "Comando cadastrado com sucesso")
+
+    nome_comando_input.delete(0, END)
+    descricao_comando_input.delete("1.0", END)
+    comando_input.delete("1.0", END)
+
+    # Recarregue os comandos disponíveis
+    comandos_lista = ver_comandos()
+    comandos = [str(item[1]) for item in comandos_lista]
+
+    # Remova o dropdown atual se existir
+    if dropdown_comandos:
+        dropdown_comandos.destroy()
+
+    # Crie um novo dropdown com os comandos atualizados
+    dropdown_comandos = CTkComboBox(master=tab_view.tab("Executar"), width=300, command=comando_escolhido, values=comandos)
+    dropdown_comandos.set("Escolha um comando")
+    dropdown_comandos.pack(pady=5)
+
+
+
 
 # Frame do header
 frame_header = CTkFrame(app)
@@ -109,25 +154,34 @@ tab_view.add("Cadastrar")
 ### EXECUTAR ###
 
 # Dropdown para escolher o comando
-def comando_escolhido(comando):
-    descricao_comando.configure(text=f"Descrição: {comando}", wraplength=350)
+comandos_lista = ver_comandos()
+comandos = [str(item[1]) for item in comandos_lista]
 
-dropdown_comandos = CTkComboBox(master=tab_view.tab("Executar"), width=300, command=comando_escolhido, values=["", "Comando 1 Comando 1 Comando 1 Comando 1 Comando 1 Comando 1 Comando 1 Comando 1 Comando 1 ", "Comando 2", "Comando 3", "Comando 4", "Comando 5"])
+descricao_lista = ver_comandos()
+descricao = [str(item[2]) for item in descricao_lista]
+
+def comando_escolhido(comando):
+    descricao_comando.configure(text=f"Descrição: {descricao[1]}", wraplength=350)
+
+dropdown_comandos = CTkComboBox(master=tab_view.tab("Executar"), width=300, command=comando_escolhido, values=comandos)
+dropdown_comandos.set("Escolha um comando")
 dropdown_comandos.pack(pady=5)
+
 
 # Executar o comando selecionado
 def executar_comando():
     codigo_comando = comando_input.get("1.0", END)
     try:
         exec(codigo_comando)
+        print("Comando executado com sucesso")
     except Exception as e:
         print(f"Ocorreu um erro ao executar o comando: {e}")
 
 # Botão para executar o comando
-descricao_comando = CTkLabel(master=tab_view.tab("Executar"), text="")
-descricao_comando.pack()
 button_executar = CTkButton(master=tab_view.tab("Executar"), text="Executar", command=executar_comando)
-button_executar.pack(pady=20)
+button_executar.pack(side="bottom", pady=20)
+descricao_comando = CTkLabel(master=tab_view.tab("Executar"), text="")
+descricao_comando.pack(side="bottom")
 
 ### CADASTRAR ###
 
@@ -153,7 +207,7 @@ comando_input.pack(pady=5)
 def cadastrar_comando():
     print("Cadastrar comando")
 
-button_cadastrar = CTkButton(master=tab_view.tab("Cadastrar"), text="Cadastrar", command=cadastrar_comando)
+button_cadastrar = CTkButton(master=tab_view.tab("Cadastrar"), text="Cadastrar", command=adicionar_comando)
 button_cadastrar.pack(pady=20)
 
 app.mainloop()
