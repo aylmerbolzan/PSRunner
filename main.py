@@ -2,7 +2,7 @@ from customtkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 
-from view import inserir_comando, ver_comandos
+from view import deletar_comando, inserir_comando, montar_grid, ver_comandos
 
 app = CTk()
 app.title("pyRunner")
@@ -40,6 +40,8 @@ def adicionar_comando(): # Acesse a variável global
     comandos_lista = ver_comandos()
     comandos = [str(item[1]) for item in comandos_lista]
 
+    carregar_comandos()
+
 
 # Frame do header
 frame_header = CTkFrame(app)
@@ -62,22 +64,13 @@ switch_dark.pack(side='right', pady=5, padx=10)
 # Grid de dados
 def carregar_comandos():
     tabela_head = ['Comando', 'Descrição']
-    lista_itens = [
-        ["Comando A", "Faz isso, aquilo e aquilo outro"],
-        ["Comando B", "Faz isso, aquilo e aquilo outro"],
-        ["Comando C", "Faz isso, aquilo e aquilo outro"],
-        ["Comando D", "Faz isso, aquilo e aquilo outro"],
-        ["Comando E", "Faz isso, aquilo e aquilo outro"],
-        ["Comando F", "Faz isso, aquilo e aquilo outro"],
-        ["Comando G", "Faz isso, aquilo e aquilo outro"],
-        ["Comando H", "Faz isso, aquilo e aquilo outro"],
-        ["Comando I", "Faz isso, aquilo e aquilo outro"]
-    ]
+    lista_itens = montar_grid()
+    lista_sem_id = [item[1:] for item in lista_itens]
 
-    global tree
+    global grid
 
-    tree_frame = CTkFrame(app)
-    tree_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)
+    grid_frame = CTkFrame(app)
+    grid_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)
     
 
     app.grid_columnconfigure(0, weight=1)
@@ -86,29 +79,29 @@ def carregar_comandos():
     style = ttk.Style()
     style.configure("Treeview", rowheight=20)
 
-    tree = ttk.Treeview(tree_frame, selectmode="extended", columns=tabela_head, show="headings", style="Treeview")
+    grid = ttk.Treeview(grid_frame, selectmode="extended", columns=tabela_head, show="headings", style="Treeview")
 
     # Vertical scrollbar
-    vsb = CTkScrollbar(tree_frame, orientation="vertical", command=tree.yview)
+    vsb = CTkScrollbar(grid_frame, orientation="vertical", command=grid.yview)
 
-    tree.configure(yscrollcommand=vsb.set)
-    tree.grid(column=0, row=0, sticky='nsew')
+    grid.configure(yscrollcommand=vsb.set)
+    grid.grid(column=0, row=0, sticky='nsew')
     vsb.grid(column=1, row=0, sticky='ns')
 
-    tree_frame.grid_columnconfigure(0, weight=1)
-    tree_frame.grid_rowconfigure(0, weight=1)
+    grid_frame.grid_columnconfigure(0, weight=1)
+    grid_frame.grid_rowconfigure(0, weight=1)
 
     hd = ["center", "w"]
     h = [75, 275]
     n = 0
 
     for col in tabela_head:
-        tree.heading(col, text=col.title(), anchor=CENTER)
-        tree.column(col, width=h[n], anchor=hd[n])
+        grid.heading(col, text=col.title(), anchor=CENTER)
+        grid.column(col, width=h[n], anchor=hd[n])
         n += 1
 
-    for item in lista_itens:
-        tree.insert('', 'end', values=item)
+    for item in lista_sem_id:
+        grid.insert('', 'end', values=item)
 
 carregar_comandos()
 
@@ -136,6 +129,17 @@ button_editar = CTkButton(master=frame_botoes, text="Editar", command=editar_com
 button_editar.pack(side="left", padx=10)
     
 def excluir_comando():
+    try:
+        treev_dados = grid.focus()
+        treev_dicionario = grid.item(treev_dados)
+        treev_lista = treev_dicionario['values']
+        id_comando = treev_lista[0]
+
+        deletar_comando([id_comando])
+        messagebox.showinfo("Sucesso", "O comando foi apagado com sucesso")
+    except IndexError:
+        messagebox.showerror("Erro", "Selecione um comando para excluir")
+    carregar_comandos()
     print("Excluir comando")
 
 button_excluir = CTkButton(master=frame_botoes, text="Excluir", command=excluir_comando)

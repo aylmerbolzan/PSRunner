@@ -21,3 +21,21 @@ def ver_comandos():
             lista_itens.append(l)
 
     return lista_itens
+
+# DELETE - Comando
+def deletar_comando(i):
+    with con:
+        cur = con.cursor()
+        query = "DELETE FROM comandos WHERE id = ?"
+        cur.execute(query, (i)) 
+
+# Ver dados da tabela
+def montar_grid():
+    comandos = ver_comandos()
+
+    lista_tabela = []
+
+    for i in comandos:
+        lista_tabela.append(i)
+
+    return lista_tabela
