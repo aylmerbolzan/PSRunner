@@ -32,10 +32,18 @@ def deletar_comando(i):
 # Ver dados da tabela
 def montar_grid():
     comandos = ver_comandos()
-
     lista_tabela = []
 
     for i in comandos:
         lista_tabela.append(i)
 
     return lista_tabela
+
+def atualizar_comando(comando):
+    id_comando = comando[-1]
+    comando.pop()
+
+    with con:
+        cur = con.cursor()
+        query = "UPDATE comandos SET nome = ?, descricao = ?, codigo = ? WHERE id = ?"
+        cur.execute(query, (*comando, id_comando))

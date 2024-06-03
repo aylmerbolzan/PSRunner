@@ -2,7 +2,7 @@ from customtkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 
-from view import deletar_comando, inserir_comando, montar_grid, ver_comandos
+from view import atualizar_comando, deletar_comando, inserir_comando, montar_grid
 
 app = CTk()
 app.title("pyRunner")
@@ -15,9 +15,13 @@ app.grid_columnconfigure(1, weight=2)
 tema_layout = "dark"
 set_appearance_mode(tema_layout)
 
+modo_edicao = False
+id_comando_edicao = None
 
 ### FUNÇÕES ###
-def adicionar_comando(): # Acesse a variável global
+def adicionar_comando():
+    global modo_edicao, id_comando_edicao
+    
     nome = nome_comando_input.get()
     descricao = descricao_comando_input.get("1.0", END)
     codigo = comando_input.get("1.0", END)
@@ -28,19 +32,24 @@ def adicionar_comando(): # Acesse a variável global
         if i == "":
             messagebox.showerror("Erro", "Preencha todos os campos")
             return
-        
-    inserir_comando(lista_comandos)
-    messagebox.showinfo("Sucesso", "Comando cadastrado com sucesso")
 
+    if modo_edicao:
+        lista_comandos.append(id_comando_edicao)
+        atualizar_comando(lista_comandos)
+        messagebox.showinfo("Sucesso", "Comando atualizado com sucesso")
+        modo_edicao = False
+        id_comando_edicao = None
+        button_cadastrar.configure(text="Cadastrar")
+    else:
+        inserir_comando(lista_comandos)
+        messagebox.showinfo("Sucesso", "Comando cadastrado com sucesso")
+    
     nome_comando_input.delete(0, END)
     descricao_comando_input.delete("1.0", END)
     comando_input.delete("1.0", END)
 
-    # Recarregue os comandos disponíveis
-    comandos_lista = ver_comandos()
-    comandos = [str(item[1]) for item in comandos_lista]
-
     carregar_comandos()
+
 
 
 # Frame do header
@@ -63,16 +72,14 @@ switch_dark.pack(side='right', pady=5, padx=10)
 
 # Grid de dados
 def carregar_comandos():
-    tabela_head = ['Comando', 'Descrição']
+    tabela_head = ['Comando', 'Descrição', 'ID', 'Código']
     lista_itens = montar_grid()
-    lista_sem_id = [item[1:] for item in lista_itens]
 
     global grid
 
     grid_frame = CTkFrame(app)
     grid_frame.grid(row=1, column=0, sticky='nsew', padx=10, pady=10)
     
-
     app.grid_columnconfigure(0, weight=1)
     app.grid_rowconfigure(1, weight=1)
 
@@ -91,17 +98,22 @@ def carregar_comandos():
     grid_frame.grid_columnconfigure(0, weight=1)
     grid_frame.grid_rowconfigure(0, weight=1)
 
-    hd = ["center", "w"]
-    h = [75, 275]
-    n = 0
+    # Configuração das colunas
+    grid.heading('Comando', text='Comando', anchor=CENTER)
+    grid.heading('Descrição', text='Descrição', anchor=CENTER)
+    grid.column('Comando', width=75, anchor="w")
+    grid.column('Descrição', width=275, anchor="w")
 
-    for col in tabela_head:
-        grid.heading(col, text=col.title(), anchor=CENTER)
-        grid.column(col, width=h[n], anchor=hd[n])
-        n += 1
+    # Ocultando as colunas ID e Código
+    grid.column('ID', width=0, stretch=NO)
+    grid.column('Código', width=0, stretch=NO)
+    grid.heading('ID', text='')
+    grid.heading('Código', text='')
 
-    for item in lista_sem_id:
-        grid.insert('', 'end', values=item)
+    for item in lista_itens:
+        grid.insert('', 'end', values=[item[1], item[2], item[0], item[3]])
+
+    grid["displaycolumns"] = ("Comando", "Descrição")
 
 carregar_comandos()
 
@@ -111,36 +123,73 @@ frame_botoes.grid(row=2, column=0, pady=10)
 
 # Executar o comando selecionado
 def executar_comando():
-    codigo_comando = comando_input.get("1.0", END)
     try:
+        treev_dados = grid.focus()
+        treev_dicionario = grid.item(treev_dados)
+        treev_lista = treev_dicionario['values']
+        codigo_comando = treev_lista[3]
+
         exec(codigo_comando)
         print("Comando executado com sucesso")
+    except IndexError:
+        messagebox.showerror("Erro", "Selecione um comando para executar")
     except Exception as e:
         print(f"Ocorreu um erro ao executar o comando: {e}")
+        messagebox.showerror("Erro", f"Ocorreu um erro ao executar o comando: {e}")
 
-# Botão para executar o comando
 button_executar = CTkButton(frame_botoes, text="Executar", command=executar_comando)
 button_executar.pack(side="left", padx=10)
 
 def editar_comando():
-    print("Editar comando")
+    global modo_edicao, id_comando_edicao
+
+    try:
+        treev_dados = grid.focus()
+        treev_dicionario = grid.item(treev_dados)
+        treev_lista = treev_dicionario['values']
+        
+        id_comando_edicao = treev_lista[2]
+        nome_comando = treev_lista[0]
+        descricao_comando = treev_lista[1]
+        codigo_comando = treev_lista[3]
+
+        nome_comando_input.delete(0, END)
+        nome_comando_input.insert(0, nome_comando)
+        
+        descricao_comando_input.delete("1.0", END)
+        descricao_comando_input.insert("1.0", descricao_comando)
+
+        comando_input.delete("1.0", END)
+        comando_input.insert("1.0", codigo_comando)
+
+        modo_edicao = True
+        button_cadastrar.configure(text="Atualizar")
+    except IndexError:
+        messagebox.showerror("Erro", "Selecione um comando para editar")
+    except Exception as e:
+        print(f"Ocorreu um erro ao editar o comando: {e}")
+        messagebox.showerror("Erro", f"Ocorreu um erro ao editar o comando: {e}")
+
 
 button_editar = CTkButton(master=frame_botoes, text="Editar", command=editar_comando)
 button_editar.pack(side="left", padx=10)
+
     
 def excluir_comando():
     try:
         treev_dados = grid.focus()
         treev_dicionario = grid.item(treev_dados)
         treev_lista = treev_dicionario['values']
-        id_comando = treev_lista[0]
+        id_comando = treev_lista[2]
 
         deletar_comando([id_comando])
         messagebox.showinfo("Sucesso", "O comando foi apagado com sucesso")
+        carregar_comandos() 
     except IndexError:
         messagebox.showerror("Erro", "Selecione um comando para excluir")
-    carregar_comandos()
-    print("Excluir comando")
+    except Exception as e:
+        print(f"Ocorreu um erro ao excluir o comando: {e}")
+        messagebox.showerror("Erro", f"Ocorreu um erro ao excluir o comando: {e}")
 
 button_excluir = CTkButton(master=frame_botoes, text="Excluir", command=excluir_comando)
 button_excluir.pack(side="left", padx=10)
@@ -148,18 +197,6 @@ button_excluir.pack(side="left", padx=10)
 # Tabs
 frame_cadastro = CTkFrame(app)
 frame_cadastro.grid(row=1, column=1, padx=10, pady=10, rowspan=2)
-
-### EXECUTAR ###
-
-# Dropdown para escolher o comando
-comandos_lista = ver_comandos()
-comandos = [str(item[1]) for item in comandos_lista]
-
-descricao_lista = ver_comandos()
-descricao = [str(item[2]) for item in descricao_lista]
-
-
-### CADASTRAR ###
 
 # Input do nome do comando
 label_comando = CTkLabel(frame_cadastro, text="Comando:")
@@ -180,9 +217,6 @@ comando_input = CTkTextbox(frame_cadastro, width=300, height=160, border_width=2
 comando_input.pack(pady=5, padx=10)
 
 # Botão para cadastrar o comando
-def cadastrar_comando():
-    print("Cadastrar comando")
-
 button_cadastrar = CTkButton(frame_cadastro, text="Cadastrar", command=adicionar_comando)
 button_cadastrar.pack(pady=10)
 
