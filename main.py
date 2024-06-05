@@ -2,6 +2,9 @@ from customtkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 
+import subprocess
+import platform
+
 from view import atualizar_comando, deletar_comando, inserir_comando, montar_grid
 
 app = CTk()
@@ -110,6 +113,9 @@ def carregar_comandos():
     grid.heading('ID', text='')
     grid.heading('Código', text='')
 
+    # Ordenando os itens alfabeticamente pela coluna "Comando"
+    lista_itens = sorted(lista_itens, key=lambda x: x[1].lower())
+
     for item in lista_itens:
         grid.insert('', 'end', values=[item[1], item[2], item[0], item[3]])
 
@@ -129,7 +135,17 @@ def executar_comando():
         treev_lista = treev_dicionario['values']
         codigo_comando = treev_lista[3]
 
-        exec(codigo_comando)
+        # Detecta o sistema operacional e atribui o caminho correto
+        if platform.system() == "Windows":
+            os_path = "C:/el/projetos/"
+        else:
+            os_path = "/opt/el/projetos/"
+
+        # Substitui a variável $osPath no comando pelo caminho correspondente
+        codigo_comando = codigo_comando.replace("$osPath", os_path)
+
+        # Executa o comando PowerShell
+        subprocess.run(["powershell", "-Command", codigo_comando])
         print("Comando executado com sucesso")
     except IndexError:
         messagebox.showerror("Erro", "Selecione um comando para executar")
