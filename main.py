@@ -1,6 +1,7 @@
 from customtkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from PIL import Image, ImageTk
 
 import subprocess
 import platform
@@ -57,7 +58,21 @@ def adicionar_comando():
 
 # Frame do header
 frame_header = CTkFrame(app)
-frame_header.grid(row=0, columnspan=2, sticky='ew')
+frame_header.grid(row=0, column=0, columnspan=2, sticky='ew')
+
+# Logo
+logo = Image.open("./assets/logo.png")
+width, height = logo.size
+new_width = 220
+new_height = int(new_width * height / width)
+logo = logo.resize((new_width, new_height))
+logo = ImageTk.PhotoImage(logo)
+logo_label = CTkLabel(frame_header,text="", image=logo)
+logo_label.pack(side='left', pady=20, padx=298)
+
+# Frame do header
+frame_switch = CTkFrame(app)
+frame_switch.grid(row=0, column=1, columnspan=2, sticky='ew')
 
 # Switch de dark mode
 def alternar_modo():
@@ -69,7 +84,7 @@ def alternar_modo():
         set_appearance_mode("dark")
         tema_layout = "dark"
 
-switch_dark = CTkSwitch(frame_header, text="Dark Mode", command=alternar_modo)
+switch_dark = CTkSwitch(frame_switch, text="Dark Mode", command=alternar_modo)
 switch_dark.select()
 switch_dark.pack(side='right', pady=5, padx=10)
 
