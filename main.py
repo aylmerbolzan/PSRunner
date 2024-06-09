@@ -9,12 +9,14 @@ import platform
 from view import atualizar_comando, deletar_comando, inserir_comando, montar_grid
 
 app = CTk()
-app.title("pyRunner")
+app.title("PSRunner")
 app.geometry("800x470")
 app.resizable(False, False)
 app.grid_rowconfigure(1, weight=1)
 app.grid_columnconfigure(0, weight=1)
 app.grid_columnconfigure(1, weight=2)
+
+app.iconbitmap('./assets/icon.ico')
 
 tema_layout = "dark"
 set_appearance_mode(tema_layout)
@@ -62,17 +64,14 @@ frame_header.grid(row=0, column=0, columnspan=2, sticky='ew')
 
 # Logo
 logo = Image.open("./assets/logo.png")
-width, height = logo.size
-new_width = 220
-new_height = int(new_width * height / width)
-logo = logo.resize((new_width, new_height))
-logo = ImageTk.PhotoImage(logo)
-logo_label = CTkLabel(frame_header,text="", image=logo)
-logo_label.pack(side='left', pady=20, padx=298)
+logo = logo.resize((130, 17))
+ctk_logo = CTkImage(light_image=logo, dark_image=logo, size=(130, 17))
+logo_label = CTkLabel(frame_header, text="", image=ctk_logo)
+logo_label.pack(side='left', pady=20, padx=320)
 
 # Frame do header
-frame_switch = CTkFrame(app)
-frame_switch.grid(row=0, column=1, columnspan=2, sticky='ew')
+frame_switch = CTkFrame(app, corner_radius=0)
+frame_switch.grid(row=0, column=1, columnspan=2, sticky='ne')
 
 # Switch de dark mode
 def alternar_modo():
