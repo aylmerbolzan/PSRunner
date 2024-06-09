@@ -10,7 +10,7 @@ from view import atualizar_comando, deletar_comando, inserir_comando, montar_gri
 
 app = CTk()
 app.title("PSRunner")
-app.geometry("800x470")
+app.geometry("800x510")
 app.resizable(False, False)
 app.grid_rowconfigure(1, weight=1)
 app.grid_columnconfigure(0, weight=1)
@@ -221,7 +221,7 @@ def excluir_comando():
         print(f"Ocorreu um erro ao excluir o comando: {e}")
         messagebox.showerror("Erro", f"Ocorreu um erro ao excluir o comando: {e}")
 
-button_excluir = CTkButton(master=frame_botoes, text="Excluir", command=excluir_comando)
+button_excluir = CTkButton(master=frame_botoes, text="Excluir", command=excluir_comando, fg_color="darkgray", hover_color="gray")
 button_excluir.pack(side="left", padx=10)
 
 # Tabs
