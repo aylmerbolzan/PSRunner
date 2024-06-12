@@ -148,6 +148,7 @@ def executar_comando():
         treev_dicionario = grid.item(treev_dados)
         treev_lista = treev_dicionario['values']
         codigo_comando = treev_lista[3]
+        nome_comando = treev_lista[0]
 
         # Detecta o sistema operacional e atribui o caminho correto
         if platform.system() == "Windows":
@@ -160,7 +161,7 @@ def executar_comando():
 
         # Executa o comando PowerShell
         subprocess.run(["powershell", "-Command", codigo_comando])
-        print("Comando executado com sucesso")
+        print(f"Comando '{nome_comando}' executado com sucesso")
     except IndexError:
         messagebox.showerror("Erro", "Selecione um comando para executar")
     except Exception as e:
