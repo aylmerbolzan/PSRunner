@@ -161,12 +161,37 @@ def executar_comando():
 
         # Executa o comando PowerShell
         subprocess.run(["powershell", "-Command", codigo_comando])
-        print(f"Comando '{nome_comando}' executado com sucesso")
+        print(f"Comando '{nome_comando}' executado com sucesso.\n")
     except IndexError:
         messagebox.showerror("Erro", "Selecione um comando para executar")
     except Exception as e:
         print(f"Ocorreu um erro ao executar o comando: {e}")
         messagebox.showerror("Erro", f"Ocorreu um erro ao executar o comando: {e}")
+
+def executar_comando_double_click(event):
+    try:
+        item_selecionado = grid.selection()[0]
+        valores = grid.item(item_selecionado, 'values')
+        codigo_comando = valores[3]
+        nome_comando = valores[0]
+
+        if platform.system() == "Windows":
+            os_path = "C:/el/projetos/"
+        else:
+            os_path = "/opt/el/projetos/"
+
+        codigo_comando = codigo_comando.replace("$osPath", os_path)
+
+        subprocess.run(["powershell", "-Command", codigo_comando])
+        print(f"Comando '{nome_comando}' executado com sucesso.\n")
+    except IndexError:
+        pass
+    except Exception as e:
+        print(f"Ocorreu um erro ao executar o comando: {e}")
+        messagebox.showerror("Erro", f"Ocorreu um erro ao executar o comando: {e}")
+
+grid.bind("<Double-1>", executar_comando_double_click)
+
 
 button_executar = CTkButton(frame_botoes, text="Executar", command=executar_comando)
 button_executar.pack(side="left", padx=10)
